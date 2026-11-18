@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#f5eedc">
+<title>平行人生販賣機</title>
+<style>
+:root{
+  --cream:#f5eedc;--paper:#fff9e9;--ink:#263d32;--green:#315b48;
+  --orange:#d95736;--orange-dark:#a93d29;--gold:#e8b95c;--muted:#7c806c;
+  --line:#d9cdb3;--shadow:#253d3220;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--cream);color:var(--ink);font-family:ui-rounded,"Trebuchet MS","Noto Sans TC",sans-serif;min-height:100vh}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.18;z-index:-1;background-image:radial-gradient(#8b7650 .65px,transparent .65px);background-size:7px 7px}
+button{font:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid var(--gold);outline-offset:4px}
+.page{max-width:1080px;margin:auto;padding:24px 22px 56px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;border-bottom:1px solid var(--line);padding-bottom:14px}
+.brand{font-weight:900;letter-spacing:.12em;font-size:.85rem}
+.sound-toggle{border:1px solid var(--green);background:transparent;color:var(--green);border-radius:99px;padding:9px 15px;font-size:.85rem}
+.sound-toggle[aria-pressed="true"]{background:var(--green);color:var(--cream)}
+.hero{text-align:center;padding:34px 0 20px}
+.eyebrow{font-size:.78rem;letter-spacing:.24em;color:var(--orange);font-weight:800}
+h1{font-family:Georgia,"Noto Serif TC",serif;font-size:clamp(2.1rem,6vw,4.3rem);line-height:1.15;margin:10px 0 12px;letter-spacing:.04em}
+.subtitle{color:#667265;margin:0 auto;max-width:540px;line-height:1.8}
+.step-line{display:flex;justify-content:center;align-items:center;gap:9px;margin:24px 0 28px;color:#8a8c7b;font-size:.78rem;letter-spacing:.08em}
+.step-line span{border:1px solid var(--line);padding:6px 12px;border-radius:99px}
+.step-line .active{background:var(--green);color:var(--cream);border-color:var(--green)}
+.panel{display:none;animation:rise .45s ease both}
+.panel.active{display:block}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.section-heading{text-align:center;margin-bottom:22px}
+.section-heading h2{font-family:Georgia,"Noto Serif TC",serif;font-size:1.8rem;margin:0 0 8px}
+.section-heading p{color:#7a806f;margin:0;line-height:1.7}
+.directions{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.direction{position:relative;text-align:left;border:0;border-right:1px solid var(--line);background:transparent;padding:25px 20px 24px;color:var(--ink);transition:background .2s,transform .2s}
+.direction:last-child{border-right:0}
+.direction:hover{background:#fff8e8;transform:translateY(-3px)}
+.direction.selected{background:#e8e4cf}
+.direction.selected:after{content:"✓ 已選擇";position:absolute;right:14px;top:12px;color:var(--orange);font-size:.75rem;font-weight:800}
+.direction .symbol{font-size:2rem;display:block;margin-bottom:13px;height:70px;width:90px}
+.direction .symbol svg{width:100%;height:100%;overflow:visible;animation:illustrationBob 4s ease-in-out infinite}
+.direction:nth-child(2n) .symbol svg{animation-delay:-1.4s}
+.direction:nth-child(3n) .symbol svg{animation-delay:-2.5s}
+@keyframes illustrationBob{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-5px) rotate(1deg)}}
+.direction strong{display:block;font-family:Georgia,"Noto Serif TC",serif;font-size:1.25rem;margin-bottom:8px}
+.direction small{display:block;color:#6d7769;line-height:1.65;font-size:.85rem}
+.actions{text-align:center;margin:25px 0}
+.primary,.secondary{border:0;border-radius:99px;padding:13px 26px;font-weight:800;letter-spacing:.06em;transition:transform .18s,filter .18s}
+.primary{background:var(--orange);color:#fff9e9;box-shadow:0 4px 0 var(--orange-dark)}
+.primary:hover,.secondary:hover{filter:brightness(1.06);transform:translateY(-2px)}
+.primary:active,.secondary:active{transform:translateY(2px);box-shadow:none}
+.primary:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.secondary{background:transparent;border:1px solid var(--green);color:var(--green);box-shadow:none}
+.machine-layout{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:34px;align-items:center;max-width:800px;margin:0 auto}
+.machine-wrap{display:flex;justify-content:center}
+.machine{width:min(100%,420px);background:var(--orange);border:5px solid var(--ink);border-radius:25px 25px 15px 15px;padding:18px 19px 17px;box-shadow:9px 10px 0 #263d3220;position:relative}
+.machine:before{content:"";position:absolute;left:50%;top:-13px;transform:translateX(-50%);width:48%;height:13px;background:var(--ink);border-radius:8px 8px 0 0}
+.machine-sign{background:var(--cream);border:3px solid var(--ink);text-align:center;padding:11px 6px 9px;border-radius:9px;font-family:Georgia,"Noto Serif TC",serif;font-weight:bold;font-size:1.15rem;letter-spacing:.1em}
+.machine-window{margin:15px 0;background:#d9e0c9;border:4px solid var(--ink);border-radius:12px;padding:12px;min-height:190px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.capsule-pool{position:absolute;inset:8px 8px 25px;display:grid;grid-template-columns:repeat(4,47px);grid-auto-rows:47px;align-content:center;justify-content:center;gap:3px 7px;pointer-events:none}
+.capsule{--cap:#e58a55;width:43px;height:43px;border-radius:50%;position:relative;display:block;flex:0 0 43px;background:linear-gradient(to bottom,var(--cap) 0 48%,#fff0cf 49% 100%);border:2px solid #34483a;box-shadow:inset -4px -3px 0 #263d3218,0 3px 0 #263d3220;transform:rotate(var(--tilt,0deg))}
+.capsule:before{content:"";position:absolute;left:2px;right:2px;top:47%;border-top:2px dashed #34483a;opacity:.75}
+.capsule:after{content:"";position:absolute;width:8px;height:8px;border-radius:50%;background:#fff8e7;top:8px;left:9px;opacity:.8}
+.capsule:nth-child(6n+1){--cap:#e58a55}.capsule:nth-child(6n+2){--cap:#d9a94e}.capsule:nth-child(6n+3){--cap:#8ca58a}.capsule:nth-child(6n+4){--cap:#d77b68}.capsule:nth-child(6n+5){--cap:#8c9ab0}.capsule:nth-child(6n){--cap:#c6a0b8}
+.machine-window .window-art{z-index:1;opacity:.0}
+.machine-window .window-caption{z-index:2;background:#d9e0c9d9;padding:3px}
+.machine.gacha-spin .capsule{animation:capsuleTumble .48s ease-in-out infinite alternate}
+.machine.gacha-spin .capsule:nth-child(3n){animation-duration:.34s}
+.machine.gacha-spin .capsule:nth-child(even){animation-delay:-.23s}
+@keyframes capsuleTumble{from{translate:-5px -7px;rotate:-24deg}to{translate:6px 8px;rotate:28deg}}
+.machine.gacha-spin .capsule-pool{animation:poolSwirl .8s ease-in-out infinite}
+@keyframes poolSwirl{0%,100%{transform:rotate(-2deg) translateX(-2px)}50%{transform:rotate(2deg) translateX(2px)}}
+.capsule-drop{position:absolute;z-index:4;width:56px;height:56px;left:calc(50% - 28px);top:38%;opacity:0;pointer-events:none}
+.capsule-top,.capsule-bottom{position:absolute;left:2px;width:52px;height:27px;border:2px solid var(--ink);background:#e58a55;box-shadow:inset -3px -2px 0 #263d3218}
+.capsule-top{top:1px;border-radius:28px 28px 5px 5px;z-index:2;transform-origin:50% 100%}
+.capsule-bottom{top:27px;border-radius:5px 5px 28px 28px;background:#fff0cf;transform-origin:50% 0}
+.capsule-top:after{content:"";position:absolute;left:7px;top:7px;width:8px;height:5px;border-radius:50%;background:#fff8e7}
+.capsule-prize{position:absolute;z-index:1;left:15px;top:15px;font-size:27px;color:#d95736;opacity:0;transform:scale(.2)}
+.machine.capsule-release .capsule-drop{opacity:1;animation:capsuleRelease .72s cubic-bezier(.2,.75,.25,1) both}
+@keyframes capsuleRelease{0%{transform:translate(0,-45px) scale(.45) rotate(0)}55%{transform:translate(13px,54px) scale(1.08) rotate(210deg)}78%{transform:translate(-4px,91px) scale(1) rotate(320deg)}100%{transform:translate(0,105px) scale(1) rotate(360deg)}}
+.machine.capsule-open .capsule-top{animation:openTop .58s cubic-bezier(.2,.8,.2,1) both}
+.machine.capsule-open .capsule-bottom{animation:openBottom .58s cubic-bezier(.2,.8,.2,1) both}
+.machine.capsule-open .capsule-prize{animation:prizePop .7s .12s cubic-bezier(.2,.8,.2,1) both}
+@keyframes openTop{to{transform:translate(-20px,-24px) rotate(-42deg)}}
+@keyframes openBottom{to{transform:translate(19px,24px) rotate(38deg)}}
+@keyframes prizePop{0%{opacity:0;transform:translateY(8px) scale(.2)}65%{opacity:1;transform:translateY(-18px) scale(1.25)}100%{opacity:1;transform:translateY(-13px) scale(1)}}
+.window-art{z-index:1;opacity:.0}
+.machine-window .window-caption{z-index:2;background:#d9e0c9d9;padding:3px}
+.machine.gacha-spin .capsule{animation:capsuleTumble .42s ease-in-out infinite alternate}
+.machine.gacha-spin .capsule:nth-child(even){animation-delay:-.2s}
+.machine.gacha-spin .capsule:nth-child(3n){animation-duration:.31s}
+@keyframes capsuleTumble{from{transform:translate(-5px,-8px) rotate(-18deg)}to{transform:translate(7px,9px) rotate(22deg)}}
+.machine.gacha-spin .capsule-pool{animation:poolSwirl .65s ease-in-out infinite}
+@keyframes poolSwirl{0%,100%{transform:rotate(-5deg) scale(.96)}50%{transform:rotate(5deg) scale(1.04)}}
+.capsule-drop{position:absolute;z-index:4;width:52px;height:52px;border-radius:50%;left:calc(50% - 26px);top:42%;background:linear-gradient(to bottom,#e58a55 0 48%,#fff0cf 49% 100%);border:2px solid var(--ink);box-shadow:inset -4px -3px 0 #263d3220;opacity:0;pointer-events:none}
+.capsule-drop:after{content:"";position:absolute;left:2px;right:2px;top:47%;border-top:2px dashed var(--ink)}
+.machine.capsule-release .capsule-drop{opacity:1;animation:capsuleRelease .85s cubic-bezier(.2,.75,.25,1) both}
+@keyframes capsuleRelease{0%{transform:translate(0,-35px) scale(.55) rotate(0)}45%{transform:translate(18px,45px) scale(1.08) rotate(160deg)}75%{transform:translate(-5px,95px) scale(1) rotate(280deg)}100%{transform:translate(0,125px) scale(.85) rotate(360deg);opacity:0}}
+.window-art{font-size:4.2rem;filter:drop-shadow(3px 4px 0 #263d3220);transition:transform .3s}
+.window-caption{position:absolute;bottom:9px;left:0;right:0;text-align:center;font-size:.73rem;letter-spacing:.12em;color:var(--green);font-weight:800}
+.machine-controls{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.coin-slot{height:9px;width:54px;border:3px solid var(--ink);border-radius:99px;background:#f4d28a}
+.lever{border:3px solid var(--ink);background:var(--gold);color:var(--ink);width:62px;height:62px;border-radius:50%;font-size:1.55rem;box-shadow:0 4px 0 var(--ink);transition:transform .15s}
+.lever:active{transform:translateY(4px);box-shadow:none}
+.lever:disabled{opacity:.5;cursor:wait}
+.dispenser{height:25px;background:#773b2e;border:3px solid var(--ink);border-radius:4px;margin:14px 24px 0;position:relative}
+.dispenser:after{content:"";position:absolute;width:65px;height:7px;background:#402f29;left:50%;top:6px;transform:translateX(-50%);border-radius:9px}
+.dispenser:before{content:"PULL YOUR POSSIBILITY";position:absolute;left:50%;top:31px;transform:translateX(-50%);white-space:nowrap;color:#f5eedc;font-size:.52rem;letter-spacing:.13em;font-weight:800}
+.paper-feed{height:0;overflow:hidden;align-self:center;width:62%;margin:0 auto;background:repeating-linear-gradient(0deg,#fff9e9 0 13px,#eee3ca 14px 15px);border-left:1px dashed #c9b995;border-right:1px dashed #c9b995;color:#a94a32;text-align:center;font-size:.53rem;font-weight:900;letter-spacing:.12em;transition:height .15s ease;position:relative}
+.paper-feed span{display:block;padding:12px 2px;white-space:nowrap}
+.machine.feeding .paper-feed{height:62px;animation:feedPaper 1.2s cubic-bezier(.2,.7,.25,1) both}
+@keyframes feedPaper{0%{height:0;transform:translateY(-12px)}45%{height:68px;transform:translateY(0)}70%{height:55px}100%{height:62px}}
+.machine:after{content:"✦";position:absolute;right:-19px;top:105px;color:#f4d28a;font-size:24px;animation:twinkle 2s ease-in-out infinite}
+.machine-sign{position:relative}
+.machine-sign:after{content:"✧";position:absolute;right:10px;top:-12px;color:var(--orange);font-size:18px;animation:twinkle 1.6s ease-in-out infinite}
+.machine-note{font-size:.85rem;line-height:1.8;color:#6c776b}
+.machine-note strong{color:var(--orange)}
+.ticket-area{max-width:600px;margin:28px auto 0;display:none}
+.ticket-area.show{display:block;animation:ticketIn .65s cubic-bezier(.2,.8,.2,1) both}
+@keyframes ticketIn{
+  0%{opacity:0;transform:translateY(-145px) rotate(-2deg) scaleY(.12);filter:blur(1px)}
+  35%{opacity:1;transform:translateY(-72px) rotate(1.5deg) scaleY(.55);filter:blur(0)}
+  72%{transform:translateY(9px) rotate(-.8deg) scaleY(1.03)}
+  86%{transform:translateY(-5px) rotate(.4deg) scaleY(.99)}
+  100%{opacity:1;transform:translateY(0) rotate(0) scaleY(1)}
+}
+.ticket{background:var(--paper);background-image:repeating-linear-gradient(0deg,transparent 0 5px,#bca77b0b 6px);border:1px solid #c9b995;box-shadow:0 7px 0 #d9cdb3,0 13px 20px #263d3212;padding:25px 28px;position:relative;text-align:center;transform-origin:top center}
+.ticket:after{box-shadow:inset 0 -7px 0 -6px #c9b995}
+.ticket:where(:not(.no-perf)):before{border-style:dashed}
+.ticket:where(:not(.no-perf)) .ticket-top:after{content:"  · · · · · · · · · · · · · · · · · ·";display:block;color:#c9b995;letter-spacing:.12em;font-size:.65rem;margin-top:8px}
+.ticket:before,.ticket:after{content:"";position:absolute;top:50%;width:22px;height:22px;border-radius:50%;background:var(--cream);border:1px solid #c9b995}
+.ticket:before{left:-12px}.ticket:after{right:-12px}
+.ticket-top{font-size:.7rem;letter-spacing:.2em;color:var(--orange);font-weight:900}
+.ticket-illustration{height:116px;display:flex;align-items:center;justify-content:center;margin:12px auto 2px}
+.ticket-illustration svg{width:min(230px,80%);height:110px;overflow:visible;filter:drop-shadow(2px 3px 0 #263d3218);animation:ticketDoodle 3.8s ease-in-out infinite}
+@keyframes ticketDoodle{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-6px) rotate(1deg)}}
+.ticket-illustration .spark{transform-origin:center;animation:twinkle 1.8s ease-in-out infinite}
+@keyframes twinkle{0%,100%{opacity:.35;transform:scale(.8)}50%{opacity:1;transform:scale(1.2)}}
+.ticket h3{font-family:Georgia,"Noto Serif TC",serif;font-size:1.65rem;margin:12px 0}
+.ticket p{line-height:1.9;margin:0 auto;max-width:440px;color:#566356}
+.ticket-meta{border-top:1px dashed var(--line);margin-top:18px;padding-top:13px;display:flex;justify-content:space-between;gap:10px;font-size:.75rem;color:#7b806e}
+.ticket-actions{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0}
+.notice{min-height:24px;text-align:center;color:var(--orange-dark);font-size:.85rem;font-weight:700;margin:8px 0}
+.collection{max-width:760px;margin:36px auto 0;border-top:1px solid var(--line);padding-top:20px}
+.collection-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.collection h3{font-family:Georgia,"Noto Serif TC",serif;margin:0;font-size:1.2rem}
+.collection-count{font-size:.8rem;color:#818575}
+.saved-list{margin-top:13px;display:grid;grid-template-columns:repeat(2,1fr);gap:0 22px}
+.saved-item{border-bottom:1px dashed var(--line);padding:12px 0;display:flex;justify-content:space-between;gap:12px;align-items:center;font-size:.87rem}
+.saved-item button{border:0;background:transparent;color:var(--orange);font-size:.8rem;text-decoration:underline}
+.empty{color:#8a8c7b;font-size:.85rem;padding:14px 0}
+.footer{text-align:center;color:#99937e;font-size:.72rem;letter-spacing:.12em;margin-top:48px}
+@media(max-width:680px){
+ .page{padding:17px 16px 40px}.hero{padding-top:27px}.directions{grid-template-columns:1fr}
+ .direction{border-right:0;border-bottom:1px solid var(--line);padding:17px 18px;display:grid;grid-template-columns:45px 1fr;column-gap:12px}
+ .direction:last-child{border-bottom:0}.direction .symbol{grid-row:span 2;margin:3px 0 0;width:62px;height:58px}
+ .direction strong{font-size:1.1rem;margin:0 0 3px}.direction small{font-size:.8rem}
+ .machine-layout{grid-template-columns:1fr;gap:17px}.machine{max-width:360px}.machine-note{text-align:center;max-width:340px;margin:auto}
+ .machine-window{min-height:165px}.saved-list{grid-template-columns:1fr}.ticket{padding:23px 20px}
+}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="topbar">
+    <div class="brand">✳ THE ELSEWHERE MACHINE</div>
+    <button class="sound-toggle" id="soundToggle" aria-pressed="true">♫ 音效：開</button>
+  </header>
+
+  <header class="hero">
+    <div class="eyebrow">如果當初，選了另一條路？</div>
+    <h1>平行人生販賣機</h1>
+    <p class="subtitle">投下一點好奇心，領取一張來自另一個自己的生活票券。<br>每一種人生，都有它獨特的風景。</p>
+  </header>
+
+  <nav class="step-line" aria-label="遊戲進度">
+    <span id="step1" class="active">01 選擇方向</span><b>—</b><span id="step2">02 操作販賣機</span><b>—</b><span id="step3">03 領取票券</span>
+  </nav>
+
+  <main>
+    <section class="panel active" id="choosePanel">
+      <div class="section-heading">
+        <h2>今天想走進哪一種人生？</h2>
+        <p>沒有正確答案，憑直覺選一個就好。</p>
+      </div>
+      <div class="directions" id="directions">
+        <button class="direction" data-path="adventure" aria-pressed="false">
+          <span class="symbol"><svg viewBox="0 0 90 68" aria-hidden="true"><circle cx="66" cy="16" r="9" fill="#e8b95c"/><path d="M8 57 31 25l13 17 10-13 28 28Z" fill="#6f9274" stroke="#263d32" stroke-width="2.5" stroke-linejoin="round"/><path d="m24 34 7-9 7 10" fill="none" stroke="#fff9e9" stroke-width="2.5"/><path d="M14 58h67" stroke="#263d32" stroke-width="2.5" stroke-linecap="round"/><path d="M45 9v8m-4-4h8" stroke="#d95736" stroke-width="2.5" stroke-linecap="round"/></svg></span><strong>遠方召喚我</strong><small>旅行、冒險、未知的城市。把日常留在身後，去看看世界。</small>
+        </button>
+        <button class="direction" data-path="slow" aria-pressed="false">
+          <span class="symbol"><svg viewBox="0 0 90 68" aria-hidden="true"><path d="M19 26h39v23a9 9 0 0 1-9 9H28a9 9 0 0 1-9-9Z" fill="#fff9e9" stroke="#263d32" stroke-width="2.5"/><path d="M58 31h8a8 8 0 0 1 0 16h-8" fill="none" stroke="#263d32" stroke-width="2.5"/><path d="M28 18c-4-6 4-7 0-13m14 13c-4-6 4-7 0-13" fill="none" stroke="#d95736" stroke-width="2.5" stroke-linecap="round"/><path d="M13 59h61" stroke="#263d32" stroke-width="2.5" stroke-linecap="round"/><path d="M72 18q7-10 12 0-5 7-12 0Z" fill="#6f9274" stroke="#263d32" stroke-width="2"/></svg></span><strong>慢一點也很好</strong><small>小店、植物、午後陽光。把生活調成自己喜歡的速度。</small>
+        </button>
+        <button class="direction" data-path="dream" aria-pressed="false">
+          <span class="symbol"><svg viewBox="0 0 90 68" aria-hidden="true"><path d="m45 5 7 20 20 7-20 7-7 21-7-21-20-7 20-7Z" fill="#e8b95c" stroke="#263d32" stroke-width="2.5" stroke-linejoin="round"/><path d="m17 9 3 8 8 3-8 3-3 8-3-8-8-3 8-3Z" fill="#d95736"/><path d="M72 45v15m-7-8h14" stroke="#6f9274" stroke-width="3" stroke-linecap="round"/></svg></span><strong>成為想成為的人</strong><small>創作、勇氣、新的可能。試著活出心裡那個版本的自己。</small>
+        </button>
+        <button class="direction" data-path="love" aria-pressed="false">
+          <span class="symbol"><svg viewBox="0 0 90 68" aria-hidden="true"><path d="M45 55S10 35 15 17C19 2 37 7 45 20 53 7 71 2 75 17c5 18-30 38-30 38Z" fill="#d95736" stroke="#263d32" stroke-width="2.5" stroke-linejoin="round"/><path d="M28 33q17 12 34 0" fill="none" stroke="#fff9e9" stroke-width="2.5" stroke-linecap="round"/><path d="M11 10 7 5m72 7 4-5" stroke="#e8b95c" stroke-width="3" stroke-linecap="round"/></svg></span><strong>遇見另一種愛</strong><small>相遇、陪伴、重新理解關係。看看另一個自己如何去愛與被愛。</small>
+        </button>
+        <button class="direction" data-path="mystery" aria-pressed="false">
+          <span class="symbol"><svg viewBox="0 0 90 68" aria-hidden="true"><path d="M57 7C35 9 28 37 45 51c7 6 17 7 25 2C56 65 28 59 21 39 14 18 35 0 57 7Z" fill="#e8b95c" stroke="#263d32" stroke-width="2.5"/><path d="m69 11 3 7 7 3-7 3-3 7-3-7-7-3 7-3Z" fill="#d95736"/><circle cx="20" cy="15" r="3" fill="#6f9274"/><circle cx="17" cy="49" r="2.5" fill="#6f9274"/></svg></span><strong>走進未知故事</strong><small>奇遇、秘密、命運轉彎。平凡的一天，也可能藏著不平凡的入口。</small>
+        </button>
+        <button class="direction" data-path="craft" aria-pressed="false">
+          <span class="symbol"><svg viewBox="0 0 90 68" aria-hidden="true"><path d="M45 24c-15-18-29-2-12 8-20 7-9 25 8 15-2 20 20 20 16 0 17 10 28-8 8-15 17-10 3-26-12-8Z" fill="#e8b95c" stroke="#263d32" stroke-width="2.5"/><circle cx="45" cy="35" r="7" fill="#d95736" stroke="#263d32" stroke-width="2"/><path d="M45 43v18m0-8q-12-8-17 1m17-1q12-8 17 1" fill="none" stroke="#315b48" stroke-width="3" stroke-linecap="round"/></svg></span><strong>用雙手創造生活</strong><small>手作、料理、修補與創造。讓想法慢慢長成看得見的模樣。</small>
+        </button>
+      </div>
+      <div class="actions"><button class="primary" id="toMachine" disabled>把這個可能交給販賣機　→</button></div>
+    </section>
+
+    <section class="panel" id="machinePanel">
+      <div class="section-heading">
+        <h2>請轉動命運的把手</h2>
+        <p id="chosenText">販賣機正在整理你的平行人生……</p>
+      </div>
+      <div class="machine-layout">
+        <div class="machine-wrap">
+          <div class="machine" id="machine" aria-label="平行人生販賣機">
+            <div class="machine-sign">PARALLEL LIFE</div>
+            <div class="machine-window" id="machineWindow">
+              <div class="capsule-pool" aria-hidden="true">
+                <i class="capsule" style="--tilt:-12deg"></i><i class="capsule" style="--tilt:8deg"></i><i class="capsule" style="--tilt:18deg"></i><i class="capsule" style="--tilt:-8deg"></i>
+                <i class="capsule" style="--tilt:13deg"></i><i class="capsule" style="--tilt:-18deg"></i><i class="capsule" style="--tilt:5deg"></i><i class="capsule" style="--tilt:-4deg"></i>
+                <i class="capsule" style="--tilt:22deg"></i><i class="capsule" style="--tilt:-15deg"></i><i class="capsule" style="--tilt:10deg"></i><i class="capsule" style="--tilt:-22deg"></i>
+                <i class="capsule" style="--tilt:3deg"></i><i class="capsule" style="--tilt:-7deg"></i><i class="capsule" style="--tilt:16deg"></i><i class="capsule" style="--tilt:-2deg"></i>
+              </div>
+              <div class="capsule-drop" aria-hidden="true">
+                <span class="capsule-top"></span><span class="capsule-bottom"></span><span class="capsule-prize">✦</span>
+              </div>
+              <div class="window-art" id="windowArt">✧</div>
+              <div class="window-caption" id="windowCaption">TURN TO MIX THE CAPSULES</div>
+            </div>
+            <div class="machine-controls">
+              <span class="coin-slot" aria-label="投幣口"></span>
+              <span style="font-size:.72rem;color:#fff4d8;font-weight:900;letter-spacing:.1em">TURN ME</span>
+              <button class="lever" id="pullLever" aria-label="轉動把手" title="轉動把手">↻</button>
+            </div>
+            <div class="dispenser" aria-label="票券出口"></div>
+            <div class="paper-feed" id="paperFeed" aria-hidden="true"><span>✦ YOUR NEXT LIFE ✦</span></div>
+          </div>
+        </div>
+        <aside class="machine-note">
+          <strong>使用說明 /</strong><br>
+          1. 深呼吸，想像另一個自己。<br>
+          2. 按下把手，讓命運轉一圈。<br>
+          3. 從出口領取你的平行人生票券。<br><br>
+          <span>六種人生方向、四十八種可能。每次抽取都可能遇見不同的自己。</span>
+        </aside>
+      </div>
+      <div class="notice" id="notice" role="status" aria-live="polite"></div>
+      <div class="ticket-area" id="ticketArea" aria-live="polite">
+        <article class="ticket">
+          <div class="ticket-top">✦ PARALLEL LIFE TICKET ✦</div>
+          <div class="ticket-illustration" id="ticketIllustration" aria-hidden="true"></div>
+          <h3 id="ticketTitle">尚未揭曉的生活</h3>
+          <p id="ticketStory"></p>
+          <div class="ticket-meta"><span id="ticketPath">人生方向</span><span id="ticketCode">NO. 000</span><span>僅此一張・此刻有效</span></div>
+        </article>
+        <div class="ticket-actions">
+          <button class="primary" id="saveTicket">♡ 收藏這張票券</button>
+          <button class="secondary" id="drawAgain">再抽一次 ↻</button>
+          <button class="secondary" id="backChoose">重新選方向</button>
+        </div>
+      </div>
+      <div class="actions" id="firstDrawActions"><button class="secondary" id="backFromMachine">← 回去重新選擇</button></div>
+    </section>
+  </main>
+
+  <section class="collection" aria-label="收藏的票券">
+    <div class="collection-head"><h3>口袋裡的平行人生</h3><span class="collection-count" id="collectionCount">0 張收藏</span></div>
+    <div class="saved-list" id="savedList"><div class="empty">你收藏的另一種人生，會在這裡等你。</div></div>
+  </section>
+  <footer class="footer">A LITTLE MACHINE FOR THE LIVES WE DIDN'T LIVE · 2026</footer>
+</div>
+
+<script>
+(() => {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const paths = {
+    adventure: {label:"遠方召喚我", icon:"🧭", items:[
+      ["海邊的郵差","你住進一座靠海的小鎮，每天騎著單車送信。某封沒有地址的信，讓你認識了一個改變生活的人。"],
+      ["凌晨四點的登山者","你開始追逐日出。山徑教會你不必總是走得快，只要記得抬頭，就會看見光。"],
+      ["異國巷口的麵包師","你在陌生城市學會揉麵團，也學會用不流利的語言交朋友。日子有麵粉香，還有好多新名字。"],
+      ["移動書店的主人","你開著一台老車旅行，車上裝滿二手書。每到一站，就交換一個故事再出發。"],
+      ["森林裡的觀星人","你搬到森林邊緣，替旅人指認星座。夜空很大，而你終於不急著找到答案。"],
+      ["火車終點站的旅人","你買了一張沒有回程日期的車票，在陌生月台遇見一群同樣不趕時間的人。"],
+      ["沙漠裡的植物採集家","你跟著季節尋找罕見的小花，將每次發現做成手繪圖鑑。"],
+      ["島嶼燈塔守望員","你住進海風吹拂的燈塔，每晚替遠方船隻點亮方向，也慢慢找到自己的方向。"]
+    ]},
+    slow: {label:"慢一點也很好", icon:"☕", items:[
+      ["巷口花店的日常","你接手一間小花店，記得熟客喜歡的花。每天打烊前，總會留一束給自己。"],
+      ["山城咖啡店老闆","你在山城開了間小小咖啡館。雨天有咖啡香，晴天有貓打盹，時間剛剛好。"],
+      ["陽台上的植物學家","你把陽台變成一座小森林，從一片新葉裡看見季節。原來照顧某件事，也是在照顧自己。"],
+      ["老屋修復師","你學會修窗框、補磁磚，讓一棟老房子重新亮起燈。每一道痕跡，都有留下來的理由。"],
+      ["午後甜點研究員","你在家試做各種甜點，失敗的配方也寫進筆記。某天，一塊蛋糕讓陌生人露出笑容。"],
+      ["河畔散步家","你每天沿著河岸走同一段路，認識了樹影、候鳥和幾位點頭之交。小小的日常成了你的寶藏。"],
+      ["舊唱片行店主","你整理一間老唱片行，替每位客人找一首適合今天的歌。"],
+      ["山腳下的民宿主人","你把老房子整理成幾間客房，為旅人準備早餐，也收藏他們留下的故事。"]
+    ]},
+    dream: {label:"成為想成為的人", icon:"✦", items:[
+      ["獨立漫畫家","你終於把腦海裡的角色畫出來。第一本小誌印得不完美，卻在某個讀者手裡待了好多年。"],
+      ["深夜電台主持人","你用聲音陪伴失眠的人。某通聽眾來電說：謝謝你，今晚我覺得沒那麼孤單了。"],
+      ["街頭舞者","你不再等到準備好才開始。音樂一下，你就在廣場跳出自己的節奏。"],
+      ["小島上的老師","你帶著一箱故事書來到小島，和孩子們一起把教室變成想像力的基地。"],
+      ["發明日常的人","你成立一間奇怪的小工作室，專門把沒人注意的小麻煩變成有趣的發明。"],
+      ["獨立電影導演","你用一台舊攝影機拍下身邊的人，作品在小小的放映室裡，讓觀眾想起自己的故事。"],
+      ["城市裡的說書人","你在街角搭起小舞台，把聽來的故事說給路過的人聽，慢慢聚集一群固定聽眾。"],
+      ["夜空研究員","你加入天文團隊，在無數個夜晚追蹤星體，終於為一顆新發現的小行星取了名字。"]
+    ]},
+    love: {label:"遇見另一種愛", icon:"♡", items:[
+      ["雨天共傘的人","你在一場午後大雨裡借出半邊傘，從此多了一位會分享晚餐、也分享沉默的朋友。"],
+      ["寫信給未來的人","你開始每月寄一封信給重要的人。多年後，那些字句成了彼此最溫柔的時間膠囊。"],
+      ["一起養貓的室友","你和一位意想不到的夥伴一起照顧一隻流浪貓，日子多了鬧鐘、罐罐和默契。"],
+      ["重逢的老同學","你在二手書店遇見多年不見的人，聊起當年沒說完的話，也發現彼此都長成新的模樣。"],
+      ["遠距離的星空戀人","你們住在不同城市，每晚傳一張窗外的天空，讓距離變成一種共同觀看。"],
+      ["社區廚房的夥伴","你和鄰居每週煮一桌飯，從交換食譜開始，慢慢成為彼此生活裡可靠的人。"],
+      ["把自己放回心上的人","你學會不再勉強迎合所有期待，開始好好照顧自己，也遇見更自在的關係。"],
+      ["旅途中的短暫知己","你和一位旅人只同行三天，卻在分別時交換了最真誠的祝福。"]
+    ]},
+    mystery: {label:"走進未知故事", icon:"☾", items:[
+      ["午夜的第十三班車","你搭上一班時刻表上沒有的公車，窗外街景逐漸變成童年記憶裡的模樣。"],
+      ["會寄信的老房子","你搬進一棟老屋，每週門縫都會出現一封信，寫著下週即將發生的小事。"],
+      ["失物招領所管理員","你接下一間神祕失物招領所，發現每件物品都帶著一段尚未說完的故事。"],
+      ["月光下的唱片","你買到一張沒有標籤的唱片，每次播放，都會聽見一個陌生人留下的線索。"],
+      ["城市屋頂的門","你在熟悉的大樓頂樓發現一扇從未見過的門，門後是一座安靜的空中花園。"],
+      ["替星星保管秘密的人","每當有人對夜空許願，你就會收到一顆小小的玻璃珠，直到某天拼出自己的願望。"],
+      ["古董鐘錶修理師","你修好一只停擺多年的懷錶，發現它每到整點，就會讓房間裡的一件物品說話。"],
+      ["沒有名字的島","你收到一張沒有寄件人的地圖，循著海潮找到一座不在任何導航上的小島。"]
+    ]},
+    craft: {label:"用雙手創造生活", icon:"✿", items:[
+      ["陶土工作室的主人","你每天揉土、拉胚，讓手掌記住形狀。第一只歪斜的杯子，反而成了最受歡迎的作品。"],
+      ["修補衣物的魔法師","你替舊衣縫上新的布章，讓每一道磨損都變成值得留下的記號。"],
+      ["木作家具職人","你在木屑與陽光裡做桌椅，學會欣賞木頭原本的紋理，不再追求完全一樣。"],
+      ["巷弄裡的料理研究家","你把家傳食譜重新整理，邀請鄰居試吃，最後開了一間只有熟客知道的小餐館。"],
+      ["紙藝燈籠設計師","你用薄紙和竹條做出一盞盞燈，讓夜晚的街區有了溫柔的光。"],
+      ["香氣採集師","你收集雨後泥土、柑橘皮和曬過棉被的味道，調成一瓶瓶日常記憶。"],
+      ["古書裝幀師","你替散落的舊書重新縫線、包封面，讓別人的故事有機會繼續被翻閱。"],
+      ["小小玩具設計師","你用木頭和布料做出會陪人長大的玩具，某個孩子把它帶去了每一趟旅行。"]
+    ]}
+  };
+
+  const pathIllustrations = {
+    adventure: `<svg viewBox="0 0 220 112" role="img" aria-label="山巒與太陽插畫"><circle cx="174" cy="25" r="15" fill="#e8b95c"/><path d="M12 95 68 26l33 42 25-30 82 57Z" fill="#739477" stroke="#263d32" stroke-width="3" stroke-linejoin="round"/><path d="m49 50 19-24 17 22m24 21 17-31 17 18" fill="none" stroke="#fff9e9" stroke-width="4"/><path d="M12 96h196" stroke="#263d32" stroke-width="3" stroke-linecap="round"/><path class="spark" d="m34 14 4 9 9 4-9 4-4 9-4-9-9-4 9-4Z" fill="#d95736"/></svg>`,
+    slow: `<svg viewBox="0 0 220 112" role="img" aria-label="咖啡杯與植物插畫"><path d="M53 35h91v45a15 15 0 0 1-15 15H68a15 15 0 0 1-15-15Z" fill="#fff9e9" stroke="#263d32" stroke-width="3"/><path d="M144 45h17a17 17 0 0 1 0 34h-17" fill="none" stroke="#263d32" stroke-width="3"/><path d="M78 25q-10-12 0-20m24 20q-10-12 0-20" fill="none" stroke="#d95736" stroke-width="3" stroke-linecap="round"/><path d="M183 91V44m0 22q-24-19-30 0 18 12 30 0Zm0-17q19-21 28-5-8 15-28 5Z" fill="#739477" stroke="#263d32" stroke-width="2.5"/><path d="M28 97h174" stroke="#263d32" stroke-width="3" stroke-linecap="round"/></svg>`,
+    dream: `<svg viewBox="0 0 220 112" role="img" aria-label="星星與鉛筆插畫"><path d="m72 9 13 34 35 13-35 13-13 34-13-34-35-13 35-13Z" fill="#e8b95c" stroke="#263d32" stroke-width="3" stroke-linejoin="round"/><path d="m151 20 12 9-40 57-12 7 2-14Z" fill="#d95736" stroke="#263d32" stroke-width="3" stroke-linejoin="round"/><path d="m111 93 12-7-2 14Z" fill="#e8b95c" stroke="#263d32" stroke-width="2"/><path class="spark" d="m178 15 4 9 9 4-9 4-4 9-4-9-9-4 9-4Z" fill="#739477"/></svg>`,
+    love: `<svg viewBox="0 0 220 112" role="img" aria-label="愛心與花朵插畫"><path d="M108 91S43 54 52 25C59 2 88 8 108 35 128 8 157 2 164 25c9 29-56 66-56 66Z" fill="#d95736" stroke="#263d32" stroke-width="3"/><path d="M79 52q29 21 58 0" fill="none" stroke="#fff9e9" stroke-width="4" stroke-linecap="round"/><circle cx="34" cy="42" r="10" fill="#e8b95c"/><circle cx="34" cy="42" r="4" fill="#d95736"/><path d="M34 53v39m0-18q-18-15-25 2 12 12 25-2m0-5q18-15 25 2-12 12-25-2" fill="#739477" stroke="#263d32" stroke-width="2.5"/></svg>`,
+    mystery: `<svg viewBox="0 0 220 112" role="img" aria-label="月亮與神祕星星插畫"><path d="M133 12c-35 5-50 44-27 70 15 17 39 19 58 5-24 30-68 20-82-9-17-36 15-75 51-66Z" fill="#e8b95c" stroke="#263d32" stroke-width="3"/><path class="spark" d="m174 21 8 17 18 7-18 7-8 18-7-18-18-7 18-7Z" fill="#d95736"/><circle cx="47" cy="29" r="5" fill="#739477"/><circle cx="36" cy="78" r="4" fill="#739477"/><path d="M24 51h18m-9-9v18" stroke="#263d32" stroke-width="2.5" stroke-linecap="round"/></svg>`,
+    craft: `<svg viewBox="0 0 220 112" role="img" aria-label="花朵與陶器插畫"><path d="M52 38c-25-29-45-3-18 14-29 15-9 42 17 23-3 29 34 29 30 0 26 19 46-8 17-23 27-17 7-43-18-14Z" fill="#e8b95c" stroke="#263d32" stroke-width="3"/><circle cx="68" cy="54" r="10" fill="#d95736" stroke="#263d32" stroke-width="2"/><path d="M143 39h39l-5 53h-29Z" fill="#d95736" stroke="#263d32" stroke-width="3"/><path d="M138 38h49m-42 11h35" stroke="#263d32" stroke-width="3" stroke-linecap="round"/><path d="M162 18v13m-8-7h16" stroke="#739477" stroke-width="3" stroke-linecap="round"/></svg>`
+  };
+
+  let selectedPath = null;
+  let currentTicket = null;
+  let soundOn = true;
+  let audioContext = null;
+  let isDrawing = false;
+  let saved = loadSaved();
+
+  function loadSaved(){
+    try { const data = JSON.parse(localStorage.getItem("parallel-life-saved") || "[]"); return Array.isArray(data) ? data : []; }
+    catch (_) { return []; }
+  }
+  function persist(){
+    try { localStorage.setItem("parallel-life-saved", JSON.stringify(saved)); }
+    catch (_) { $("notice").textContent = "瀏覽器無法儲存收藏；你仍可繼續抽取票券。"; }
+  }
+  function tone(freq=440, duration=.12, type="sine", volume=.045){
+    if(!soundOn) return;
+    try {
+      audioContext = audioContext || new (window.AudioContext || window.webkitAudioContext)();
+      if(audioContext.state === "suspended") audioContext.resume();
+      const osc=audioContext.createOscillator(), gain=audioContext.createGain();
+      osc.type=type; osc.frequency.setValueAtTime(freq,audioContext.currentTime);
+      gain.gain.setValueAtTime(volume,audioContext.currentTime);
+      gain.gain.exponentialRampToValueAtTime(.001,audioContext.currentTime+duration);
+      osc.connect(gain); gain.connect(audioContext.destination); osc.start(); osc.stop(audioContext.currentTime+duration);
+    } catch (_) { /* 音效不可用時不影響遊戲 */ }
+  }
+  function setStep(n){
+    [1,2,3].forEach(i=>$("step"+i).classList.toggle("active",i===n));
+  }
+  function showPanel(name){
+    ["choosePanel","machinePanel"].forEach(id=>$(id).classList.toggle("active",id===name));
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+  document.querySelectorAll(".direction").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      selectedPath=btn.dataset.path;
+      document.querySelectorAll(".direction").forEach(b=>{
+        const active=b===btn;b.classList.toggle("selected",active);b.setAttribute("aria-pressed",String(active));
+      });
+      $("toMachine").disabled=false;
+      tone(560,.08,"triangle");
+    });
+  });
+  $("toMachine").addEventListener("click",()=>{
+    if(!selectedPath)return;
+    $("chosenText").textContent=`你選擇了「${paths[selectedPath].label}」。轉動把手，看看另一個你正在過什麼生活。`;
+    $("windowArt").textContent=paths[selectedPath].icon;
+    $("windowCaption").textContent="A NEW LIFE IS WAITING";
+    $("ticketIllustration").innerHTML=pathIllustrations[selectedPath];
+    $("ticketArea").classList.remove("show");
+    $("firstDrawActions").style.display="block";
+    $("notice").textContent="";
+    setStep(2);showPanel("machinePanel");tone(660,.12,"triangle");
+  });
+  $("backFromMachine").addEventListener("click",()=>{setStep(1);showPanel("choosePanel");});
+  $("backChoose").addEventListener("click",()=>{setStep(1);showPanel("choosePanel");});
+  function draw(){
+    if(isDrawing || !selectedPath)return;
+    isDrawing=true;
+    $("pullLever").disabled=true;$("ticketArea").classList.remove("show");
+    $("machine").classList.add("feeding","gacha-spin");
+    $("machine").classList.remove("capsule-release","capsule-open");
+    $("firstDrawActions").style.display="none";$("notice").textContent="彩色扭蛋正在機台裡旋轉、碰撞……";
+    $("windowArt").classList.add("spinning");
+    const art=$("windowArt");
+    let ticks=0;
+    const spin=setInterval(()=>{art.textContent=["✧","✦","❋","✺","✧"][ticks%5];tone(240+ticks*38,.045,"square",.018);ticks++;},115);
+    setTimeout(()=>{
+      clearInterval(spin);
+      $("machine").classList.remove("gacha-spin","feeding");
+      $("machine").classList.add("capsule-release");
+      tone(330,.12,"triangle",.025);
+      setTimeout(()=>{
+        $("machine").classList.add("capsule-open");
+        tone(520,.1,"triangle",.025);
+      },650);
+      // 扭蛋落下、裂開，裡面的星星彈出後才揭曉票券
+      setTimeout(()=>{
+        $("machine").classList.remove("capsule-release","capsule-open");
+        const pool=paths[selectedPath].items;
+        const item=pool[Math.floor(Math.random()*pool.length)];
+        const code=String(Math.floor(100+Math.random()*900));
+        currentTicket={id:`${Date.now()}-${code}`,title:item[0],story:item[1],path:paths[selectedPath].label,code};
+        $("windowArt").textContent="🎟️";$("windowCaption").textContent="YOUR CAPSULE HAS OPENED!";
+        $("ticketTitle").textContent=currentTicket.title;$("ticketStory").textContent=currentTicket.story;
+        $("ticketPath").textContent=currentTicket.path;$("ticketCode").textContent="NO. "+code;
+        $("ticketArea").classList.add("show");$("notice").textContent="啪！扭蛋打開了，你的平行人生已送達。";
+        $("saveTicket").textContent="♡ 收藏這張票券";$("saveTicket").disabled=false;
+        $("pullLever").disabled=false;isDrawing=false;setStep(3);
+        tone(740,.13,"sine");setTimeout(()=>tone(990,.2,"sine"),110);
+      },1250);
+    },1350);
+  }
+  $("pullLever").addEventListener("click",draw);
+  $("drawAgain").addEventListener("click",()=>{setStep(2);draw();});
+  $("saveTicket").addEventListener("click",()=>{
+    if(!currentTicket)return;
+    if(saved.some(t=>t.id===currentTicket.id)){
+      $("notice").textContent="這張票券已經在你的口袋裡了。";return;
+    }
+    saved.unshift({...currentTicket});persist();renderSaved();
+    $("saveTicket").textContent="✓ 已收藏";$("saveTicket").disabled=true;
+    $("notice").textContent="收藏成功！這個可能已放進你的口袋。";tone(880,.16,"triangle");
+  });
+  function renderSaved(){
+    $("collectionCount").textContent=`${saved.length} 張收藏`;
+    const list=$("savedList");list.innerHTML="";
+    if(!saved.length){const empty=document.createElement("div");empty.className="empty";empty.textContent="你收藏的另一種人生，會在這裡等你。";list.appendChild(empty);return;}
+    saved.forEach(ticket=>{
+      const item=document.createElement("div");item.className="saved-item";
+      const label=document.createElement("span");label.textContent="✦ "+ticket.title;
+      const remove=document.createElement("button");remove.type="button";remove.textContent="移除";
+      remove.setAttribute("aria-label",`移除收藏：${ticket.title}`);
+      remove.addEventListener("click",()=>{saved=saved.filter(t=>t.id!==ticket.id);persist();renderSaved();tone(300,.08);});
+      item.append(label,remove);list.appendChild(item);
+    });
+  }
+  $("soundToggle").addEventListener("click",()=>{
+    soundOn=!soundOn;
+    $("soundToggle").textContent=soundOn?"♫ 音效：開":"♫ 音效：關";
+    $("soundToggle").setAttribute("aria-pressed",String(soundOn));
+    if(soundOn)tone(600,.1,"triangle");
+  });
+  renderSaved();
+})();
+</script>
+</body>
+</html>
